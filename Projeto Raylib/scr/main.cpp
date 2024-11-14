@@ -1,68 +1,53 @@
 #include "raylib.h"
-#include <ctime>
-#include "jogos.h"
+#include "jogos.h"  // Adicionando o cabeçalho com as declarações dos jogos
 
-void JogoReflexo() {
+int main() {
     const int screenWidth = 800;
     const int screenHeight = 450;
-    InitWindow(screenWidth, screenHeight, "Jogo de Reflexo - Raylib");
+    
+    InitWindow(screenWidth, screenHeight, "Menu Principal - Selecione um Jogo");
 
-    int score = 0;
-    bool gameOver = false;
-    int targetKey = GetRandomValue(KEY_A, KEY_Z);
+    // Carrega a imagem do logo
+    Texture2D logo = LoadTexture("logo.png");
 
-    // Configura o tempo limite inicial e a variável para controle do tempo
-    float timeLimit = 2.0f; // Tempo limite inicial em segundos
-    double startTime = GetTime();
-
-    SetTargetFPS(60); // Define o FPS do jogo
+    if (logo.id == 0) {  // Verifica se a textura foi carregada corretamente
+        DrawText("Erro ao carregar a imagem do logo", 10, 10, 20, RED);
+        EndDrawing();
+        CloseWindow();
+        return -1;
+    }
+    
+    int option = 0;
+    
+    SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        double currentTime = GetTime(); // Atualiza o tempo atual no início de cada loop
-
-        if (!gameOver) {
-            // Verifica se o tempo limite foi excedido
-            if (currentTime - startTime > timeLimit) {
-                gameOver = true;
-            }
-
-            // Verifica se a tecla correta foi pressionada
-            if (IsKeyPressed(targetKey)) {
-                score++;
-                targetKey = GetRandomValue(KEY_A, KEY_Z); // Nova tecla alvo
-                startTime = currentTime; // Reseta o tempo
-                timeLimit *= 0.95f; // Reduz o tempo limite em 5% para aumentar a dificuldade
-            }
-        } else {
-            // Reinicia o jogo se apertar ENTER
-            if (IsKeyPressed(KEY_ENTER)) {
-                gameOver = false;
-                score = 0;
-                targetKey = GetRandomValue(KEY_A, KEY_Z);
-                timeLimit = 2.0f; // Reseta o tempo limite
-                startTime = GetTime();
-            }
-        }
-
-        // Renderização
         BeginDrawing();
         ClearBackground(RAYWHITE);
+        
+        // Desenha o logo no canto superior esquerdo
+        DrawTexture(logo, 10, 10, WHITE);
 
-        if (!gameOver) {
-            DrawText("Pressione a tecla certa!", 100, 100, 20, DARKGRAY);
-            DrawText(TextFormat("Pressione: %c", targetKey), 100, 150, 30, BLUE);
-            DrawText(TextFormat("Score: %i", score), 10, 10, 20, DARKGRAY);
-            DrawText(TextFormat("Tempo restante: %.2f", timeLimit - (currentTime - startTime)), 10, 40, 20, RED);
-        } else {
-            // Exibe a tela de Game Over com a pontuação final
-            DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 40) / 2, screenHeight / 2 - 20, 40, RED);
-            DrawText(TextFormat("Score Final: %i", score), screenWidth / 2 - MeasureText("Score Final: 100", 20) / 2, screenHeight / 2 + 30, 20, DARKGRAY);
-            DrawText("Pressione ENTER para reiniciar", screenWidth / 2 - MeasureText("Pressione ENTER para reiniciar", 20) / 2, screenHeight / 2 + 60, 20, DARKGRAY);
+        DrawText("Escolha um Jogo", screenWidth / 2 - 80, 50, 20, DARKGRAY);
+        DrawText("1. Jogo de Esquiva", screenWidth / 2 - 100, 150, 20, option == 0 ? BLUE : DARKGRAY);
+        DrawText("2. Jogo de Captura", screenWidth / 2 - 100, 200, 20, option == 1 ? BLUE : DARKGRAY);
+        DrawText("3. Jogo de Reflexo", screenWidth / 2 - 100, 250, 20, option == 2 ? BLUE : DARKGRAY);
+
+        if (IsKeyPressed(KEY_DOWN)) option = (option + 1) % 3;
+        if (IsKeyPressed(KEY_UP)) option = (option - 1 + 3) % 3;
+
+        if (IsKeyPressed(KEY_ENTER)) {
+            if (option == 0) JogoEsquiva();
+            else if (option == 1) JogoCaptura();
+            else if (option == 2) JogoReflexo();
         }
-
+        
         EndDrawing();
     }
-
-    // Fecha a janela e libera recursos
+    
+    // Libera a textura do logo
+    UnloadTexture(logo);
+    
     CloseWindow();
+    return 0;
 }
